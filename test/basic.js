@@ -3,13 +3,7 @@ var assert = require("assert");
 
 
 assert.deepEqual(string.getRgba("#fef"), [255, 238, 255, 1]);
-assert.deepEqual(string.getRgba("#feff"), [255, 238, 255, 1]);
-assert.deepEqual(string.getRgba("#fef0"), [255, 238, 255, 0]);
-assert.deepEqual(string.getRgba("#fefa"), [255, 238, 255, 0.67]);
-assert.deepEqual(string.getRgba("#fffFEF"), [255, 255, 239,1]);
-assert.deepEqual(string.getRgba("#fffFEFfe"), [255, 255, 239, 1]);
-assert.deepEqual(string.getRgba("#fffFEF00"), [255, 255, 239, 0]);
-assert.deepEqual(string.getRgba("#fffFEFa9"), [255, 255, 239, 0.66]);
+assert.deepEqual(string.getRgba("#fffFEF"), [255, 255, 239, 1]);
 assert.deepEqual(string.getRgba("rgb(244, 233, 100)"), [244, 233, 100, 1]);
 assert.deepEqual(string.getRgba("rgb(100%, 30%, 90%)"), [255, 77, 229, 1]);
 assert.deepEqual(string.getRgba("transparent"), [0, 0, 0, 0]);
@@ -39,6 +33,9 @@ assert.equal(string.getAlpha("hwb(244, 100%, 100%, 0.6)"), 0.6);
 assert.equal(string.getAlpha("hwb(244, 100%, 100%)"), 1);
 
 // alpha
+assert.deepEqual(string.getRgba("#feff"), [255, 238, 255, 1]);
+assert.deepEqual(string.getRgba("#fef0"), [255, 238, 255, 0]);
+assert.deepEqual(string.getRgba("#fefa"), [255, 238, 255, 0.67]);
 assert.deepEqual(string.getRgba("#c814e933"), [200, 20, 233, 0.2]);
 assert.deepEqual(string.getRgba("#c814e900"), [200, 20, 233, 0]);
 assert.deepEqual(string.getRgba("#c814e9ff"), [200, 20, 233, 1]);
