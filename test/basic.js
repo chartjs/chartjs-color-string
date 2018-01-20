@@ -108,5 +108,3 @@ assert.equal(string.hwbString([280, 40, 60], 0), "hwb(280, 40%, 60%, 0)");
 
 assert.equal(string.keyword([255, 255, 0]), "yellow");
 assert.equal(string.keyword([100, 255, 0]), undefined);
-
-console.log("Succes");
