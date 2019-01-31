@@ -24,59 +24,81 @@ function getRgba(string) {
    if (!string) {
       return;
    }
-   var abbr =  /^#([a-fA-F0-9]{3})$/i,
-       hex =  /^#([a-fA-F0-9]{6})$/i,
-       rgba = /^rgba?\(\s*([+-]?\d+)\s*,\s*([+-]?\d+)\s*,\s*([+-]?\d+)\s*(?:,\s*([+-]?[\d\.]+)\s*)?\)$/i,
-       per = /^rgba?\(\s*([+-]?[\d\.]+)\%\s*,\s*([+-]?[\d\.]+)\%\s*,\s*([+-]?[\d\.]+)\%\s*(?:,\s*([+-]?[\d\.]+)\s*)?\)$/i,
-       keyword = /(\w+)/;
 
-   var rgb = [0, 0, 0],
-       a = 1,
-       match = string.match(abbr);
-   if (match) {
+   var abbr = /^#([a-f0-9]{3,4})$/i;
+   var hex = /^#([a-f0-9]{6})([a-f0-9]{2})?$/i;
+   var rgba = /^rgba?\(\s*([+-]?\d+)\s*,\s*([+-]?\d+)\s*,\s*([+-]?\d+)\s*(?:,\s*([+-]?[\d\.]+)\s*)?\)$/;
+   var per = /^rgba?\(\s*([+-]?[\d\.]+)\%\s*,\s*([+-]?[\d\.]+)\%\s*,\s*([+-]?[\d\.]+)\%\s*(?:,\s*([+-]?[\d\.]+)\s*)?\)$/;
+   var keyword = /(\D+)/;
+
+   var rgb = [0, 0, 0, 1];
+   var match;
+   var i;
+   var hexAlpha;
+
+   if (match = string.match(hex)) {
+      hexAlpha = match[2];
       match = match[1];
-      for (var i = 0; i < rgb.length; i++) {
+
+      for (i = 0; i < 3; i++) {
+         // https://jsperf.com/slice-vs-substr-vs-substring-methods-long-string/19
+         var i2 = i * 2;
+         rgb[i] = parseInt(match.slice(i2, i2 + 2), 16);
+      }
+
+      if (hexAlpha) {
+         rgb[3] = Math.round((parseInt(hexAlpha, 16) / 255) * 100) / 100;
+      }
+   } else if (match = string.match(abbr)) {
+      match = match[1];
+      hexAlpha = match[3];
+
+      for (i = 0; i < 3; i++) {
          rgb[i] = parseInt(match[i] + match[i], 16);
       }
-   }
-   else if (match = string.match(hex)) {
-      match = match[1];
-      for (var i = 0; i < rgb.length; i++) {
-         rgb[i] = parseInt(match.slice(i * 2, i * 2 + 2), 16);
+
+      if (hexAlpha) {
+         rgb[3] = Math.round((parseInt(hexAlpha + hexAlpha, 16) / 255) * 100) / 100;
       }
-   }
-   else if (match = string.match(rgba)) {
-      for (var i = 0; i < rgb.length; i++) {
-         rgb[i] = parseInt(match[i + 1]);
+   } else if (match = string.match(rgba)) {
+      for (i = 0; i < 3; i++) {
+         rgb[i] = parseInt(match[i + 1], 0);
       }
-      a = parseFloat(match[4]);
-   }
-   else if (match = string.match(per)) {
-      for (var i = 0; i < rgb.length; i++) {
+
+      if (match[4]) {
+         rgb[3] = parseFloat(match[4]);
+      }
+   } else if (match = string.match(per)) {
+      for (i = 0; i < 3; i++) {
          rgb[i] = Math.round(parseFloat(match[i + 1]) * 2.55);
       }
-      a = parseFloat(match[4]);
-   }
-   else if (match = string.match(keyword)) {
-      if (match[1] == "transparent") {
+
+      if (match[4]) {
+         rgb[3] = parseFloat(match[4]);
+      }
+   } else if (match = string.match(keyword)) {
+      if (match[1] === 'transparent') {
          return [0, 0, 0, 0];
       }
+
       rgb = colorNames[match[1]];
+
       if (!rgb) {
          return;
       }
+
+      rgb[3] = 1;
+
+      return rgb;
+   } else {
+      return;
    }
 
-   for (var i = 0; i < rgb.length; i++) {
+   for (i = 0; i < 3; i++) {
       rgb[i] = scale(rgb[i], 0, 255);
    }
-   if (!a && a != 0) {
-      a = 1;
-   }
-   else {
-      a = scale(a, 0, 1);
-   }
-   rgb[3] = a;
+   rgb[3] = scale(rgb[3], 0, 1);
+
    return rgb;
 }
 
@@ -136,9 +158,12 @@ function getAlpha(string) {
 }
 
 // generators
-function hexString(rgb) {
-   return "#" + hexDouble(rgb[0]) + hexDouble(rgb[1])
-              + hexDouble(rgb[2]);
+function hexString(rgba) {
+   return "#"
+      + hexDouble(rgba[0])
+      + hexDouble(rgba[1])
+      + hexDouble(rgba[2])
+      + (rgba[3] < 1 ? (hexDouble(Math.round(rgba[3] * 255))) : '');
 }
 
 function rgbString(rgba, alpha) {
